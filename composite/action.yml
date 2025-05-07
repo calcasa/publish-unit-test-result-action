@@ -150,6 +150,10 @@ inputs:
     description: 'Prior to v2.6.0, the action used the "/search/issues" REST API to find pull requests related to a commit. If you need to restore that behaviour, set this to "true". Defaults to "false".'
     default: 'false'
     required: false
+  use_pip_cache:
+    description: 'Use the pip cache task, for self-hosted runners with persistent storage you might want to disbale this.'
+    default: 'true'
+    required: false
 
 outputs:
   json:
@@ -205,6 +209,7 @@ runs:
 
     - name: Restore PIP packages cache
       uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5.0.3
+      if: success() && inputs.use_pip_cache == 'true'
       id: cache
       continue-on-error: true
       with:
@@ -322,7 +327,7 @@ runs:
 
     - name: Save PIP packages cache
       uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5.0.3
-      if: ( success() || failure() ) && ! steps.cache.outputs.cache-hit
+      if: ( success() || failure() ) && ! steps.cache.outputs.cache-hit && inputs.use_pip_cache == 'true'
       continue-on-error: true
       with:
         path: .enricomi-publish-action-pip
